@@ -932,9 +932,15 @@ function shatter(b){
 }
 function pop(x,y,text,col,size){S.pops.push({x,y,text,col,size:size||18,life:55})}
 
+/* carga de energía: se puede cargar siempre desde que arranca la fase, también durante la pausa de impacto */
+function chargeTick(){
+  if(S.state!=='play'||S.paused)return;
+  if(S.held&&!S.charging&&canFire())S.charging=true;
+  if(S.charging){const was=witch.charge;witch.charge=Math.min(1,witch.charge+1/85);hum(true,witch.charge);if(was<1&&witch.charge>=1){sfx('max');S.maxT=40;witch.maxFx=30;witch.flash=6;S.shake=6;burst2(tipOf('max').x,tipOf('max').y,.4)}}
+}
 function step(){
-  /* pausa de impacto (hitstop): todo se congela unos fotogramas */
-  if(S.freeze>0){S.freeze--;if(S.freeze===0){for(const p of S.pending)splitBall(p);S.pending=[]}return}
+  /* pausa de impacto (hitstop): todo se congela unos fotogramas, pero la carga sigue */
+  if(S.freeze>0){chargeTick();S.freeze--;if(S.freeze===0){for(const p of S.pending)splitBall(p);S.pending=[]}return}
   G.frame++;
   for(const f of S.fx)f.t++;S.fx=S.fx.filter(f=>f.t<(f.type==='dust'?24:f.type==='spark'?40:26));
   if(S.shake>0)S.shake*=.86;
@@ -967,8 +973,7 @@ function step(){
   }
   if(S.state!=='play')return;
 
-  if(S.held&&!S.charging&&canFire()&&!S.paused)S.charging=true;
-  if(S.charging){const was=witch.charge;witch.charge=Math.min(1,witch.charge+1/85);hum(true,witch.charge);if(was<1&&witch.charge>=1){sfx('max');S.maxT=40;witch.maxFx=30;witch.flash=6;S.shake=6;burst2(tipOf('max').x,tipOf('max').y,.4)}}
+  chargeTick();
   if(S.maxT>0)S.maxT--;
   if(S.recoil>0)S.recoil--;
   if(S.iceT>0)S.iceT--;if(S.invul>0)S.invul--;if(S.respawnT>0)S.respawnT--;if(S.shield)S.shieldT++;if(S.shieldBreak!=null&&++S.shieldBreak>24)S.shieldBreak=null;
