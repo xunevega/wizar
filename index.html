@@ -76,7 +76,7 @@ kbd{font-family:var(--pixel);font-size:12px;background:#0f0b17;border:1px solid 
 
   <div class="tpad" id="tpad">
     <div class="tgrp"><button type="button" class="tb" data-k="ArrowLeft" aria-label="Caminar a la izquierda">◀</button><button type="button" class="tb" data-k="ArrowRight" aria-label="Caminar a la derecha">▶</button></div>
-    <div class="tgrp"><button type="button" class="tb" data-k="ArrowUp" aria-label="Saltar">▲</button><button type="button" class="tb fire" data-k="Space" aria-label="Cargar y disparar">✦</button></div>
+    <div class="tgrp"><button type="button" class="tb fire" data-k="Space" aria-label="Cargar y disparar">✦</button></div>
   </div>
 
   <div class="card">
@@ -84,7 +84,6 @@ kbd{font-family:var(--pixel);font-size:12px;background:#0f0b17;border:1px solid 
       <h2>Cómo se juega</h2>
       <table>
         <tr><td>Caminar (gira hacia donde camina y dispara en esa dirección)</td><td><kbd>←</kbd><kbd>→</kbd> o <kbd>A</kbd><kbd>D</kbd></td></tr>
-        <tr><td>Saltar (también puedes cargar y disparar en el aire)</td><td><kbd>↑</kbd> o <kbd>W</kbd></td></tr>
         <tr><td>Disparar (sale al soltar; una bola en pantalla cada vez)</td><td>clic o toque</td></tr>
         <tr><td>Cargar: cuanto más aprietas, más grande sale la bola de energía (hasta un tope)</td><td>mantener y soltar</td></tr>
         <tr><td>Teclado</td><td><kbd>Espacio</kbd></td></tr>
@@ -509,7 +508,7 @@ const keys=new Set();
 document.querySelectorAll('.tb').forEach(b=>{
   const k=b.dataset.k;
   b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();b.classList.add('on');
-    if(k==='Space')press();else{keys.add(k);if(k==='ArrowUp'&&S.state==='play')S.jumpReq=true}});
+    if(k==='Space')press();else keys.add(k)});
   const up=e=>{b.classList.remove('on');if(k!=='Space')keys.delete(k)};
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);
 });
@@ -526,7 +525,6 @@ addEventListener('pointerup',release);addEventListener('blur',()=>keys.clear());
 addEventListener('keydown',e=>{
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
   keys.add(e.code);
-  if((e.code==='ArrowUp'||e.code==='KeyW')&&!e.repeat&&S.state==='play'&&!S.paused)S.jumpReq=true;
   if(e.code==='Enter'&&!overlay.hidden){start();return}
   if(e.code==='KeyP'){togglePause();return}
   if((e.code==='Space'||e.code==='KeyJ')&&!e.repeat)press();
