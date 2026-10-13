@@ -165,16 +165,17 @@ kbd{font-family:var(--pixel);font-size:12px;background:#0f0b17;border:1px solid 
       </table>
     </div>
     <div class="panel">
-      <h2>Potenciadores</h2>
+      <h2>Premios temporales</h2>
+      <p style="margin:0 0 6px">Duran hasta que te matan o pasas de pantalla.</p>
       <table>
-        <tr><td><b>Jefe final cada 10 fases.</b> Sus bolas no se rompen: el disparo las empuja y calienta; dos iguales calientes que chocan se fusionan (pequeña → verde → roja → azul). Dispara a la azul para devolvérsela como misil</td><td>3 impactos</td></tr>
-        <tr><td>Doble disparo: dos bolas de fuego a la vez</td><td>toda la fase</td></tr>
-        <tr><td>Rayo pegajoso: pared de magia hasta la pared; rompe la primera bola que la toque</td><td>toda la fase</td></tr>
-        <tr><td>Ráfaga Vulcan: 3 proyectiles, recto, a 25° y a 50°</td><td>toda la fase</td></tr>
+        <tr><td><b>Jefe final cada 10 fases.</b> Sus bolas no se rompen: el disparo las empuja y calienta; dos iguales calientes que chocan se fusionan (pequeña → verde → roja → azul). Dispara a la azul para devolvérsela como misil; uno de cada dos impactos suelta un premio</td><td>barra de vida</td></tr>
+        <tr><td>Triple disparo: tres bolas de fuego paralelas a la vez</td><td>temporal</td></tr>
+        <tr><td>Rayo pegajoso: pared de magia hasta la pared; rompe la primera bola que la toque</td><td>temporal</td></tr>
+        <tr><td>Ráfaga Vulcan: 3 proyectiles, recto, a 25° y a 50°</td><td>temporal</td></tr>
         <tr><td>Dinamita: rompe todas las bolas hasta el tamaño más pequeño</td><td>al instante</td></tr>
         <tr><td>Reloj: congela las bolas y las hace retroceder poco a poco</td><td>6 s</td></tr>
         <tr><td>Escudo: aguanta un golpe y te deja invulnerable un momento</td><td>hasta un golpe</td></tr>
-        <tr><td>Escondidos en bolas al azar en fases difíciles (ninguno en las fases 1–3); el premio es aleatorio; máximo 2 por fase</td><td>6 s en el suelo</td></tr>
+        <tr><td>Escondidos en bolas al azar en algunas fases (4, 7, 10 y 12; ninguno en las 1–3); el premio es aleatorio; uno por fase</td><td>8 s en el suelo</td></tr>
         <tr><td>Emergencia: con la última vida y poco tiempo sale un escudo; con la pantalla llena, un reloj</td><td>1 por fase</td></tr>
       </table>
     </div>
@@ -637,6 +638,9 @@ function launch(c){
     /* ráfaga: 3 proyectiles, recto, a 25° y a 50° hacia arriba */
     for(const deg of [0,25,50]){const a=deg*Math.PI/180;S.shots.push({x:SHOT_X+r*.5*face,y:SHOT_Y,vx:Math.cos(a)*v*face,vy:-Math.sin(a)*v,dir:face,r:r*.8,c,tier,e:1,immune:new Set(),kills:0,t:0})}
     S.muzzle={x:SHOT_X,y:SHOT_Y,dir:face,t:0};
+  }else if(S.weapon==='double'){
+    /* triple disparo: 3 bolas de fuego paralelas a la vez */
+    for(const dy of [-16,0,16])S.shots.push({x:SHOT_X+r*.5*face-Math.abs(dy)*.4*face,y:SHOT_Y+dy,vx:v*face,vy:0,dir:face,r:r*.85,c,tier,e:1,immune:new Set(),kills:0,t:0});
   }else S.shots.push({x:SHOT_X+r*.5*face,y:SHOT_Y,vx:v*face,vy:0,dir:face,r,c,tier,e:1,immune:new Set(),kills:0,t:0});
   S.recoil=18;witch.anim='thrust';witch.at=0;sfx(S.weapon==='vulcan'?'vulcan':S.weapon==='sticky'?'beam':'shot',c);
   for(let i=0;i<8+c*14;i++)S.parts.push({x:SHOT_X,y:SHOT_Y,vx:Math.random()*2*face,vy:(Math.random()-.5)*(2+c*4),life:14,max:14,c:i%2?'#ffe1a8':'#ffae4a',s:2+c*3,g:0});
@@ -657,7 +661,7 @@ function isprWH(key,x,y,w,h,alpha){const im=IIMG[key];if(!im||!im.complete)retur
 function ispr(key,x,y,w,alpha,flip){const m=ISPR[key],im=IIMG[key];if(!im||!im.complete)return;const k=w/m.w;
   ctx.save();if(alpha!=null)ctx.globalAlpha=Math.max(0,alpha);ctx.translate(x,y);if(flip)ctx.scale(-1,1);ctx.drawImage(im,-m.w*k/2,-m.h*k/2,m.w*k,m.h*k);ctx.restore()}
 /* potenciadores: aparecen al romper bolas, más a menudo en fases y momentos difíciles */
-const POW_NAME={double:'DOBLE DISPARO',sticky:'RAYO PEGAJOSO',vulcan:'RÁFAGA VULCAN',dynamite:'¡DINAMITA!',freeze:'¡CONGELAR!',shield:'ESCUDO'};
+const POW_NAME={double:'TRIPLE DISPARO',sticky:'RAYO PEGAJOSO',vulcan:'RÁFAGA VULCAN',dynamite:'¡DINAMITA!',freeze:'¡CONGELAR!',shield:'ESCUDO'};
 const POW_W={double:22,sticky:16,vulcan:16,freeze:16,shield:16,dynamite:10};
 function pickPow(){
   const opts=Object.keys(POW_W).filter(k=>k!==S.weapon&&!(k==='shield'&&S.shield)&&!(k==='freeze'&&S.iceT>0));
@@ -738,8 +742,9 @@ function damageBoss(m){
   const B=S.boss;B.hp=Math.max(0,B.hp-8);B.flash=24;S.shake=12;S.freeze=6;sfx('bosshit');addScore(5000);
   pop(B.x,B.feet-BFEET-40,'-8  5000','#ffe066',18);S.boom={x:m.x,y:m.y,t:6};
   if(B.hp<=0){bossDefeated();return}
-  /* cada golpe suelta un premio al azar */
-  if(!S.pows.length&&!S.items.length){dropItem(rollItem(),0,0);S.dropped--}
+  /* uno de cada dos golpes suelta un premio al azar */
+  B.hits=(B.hits||0)+1;
+  if(B.hits%2===0&&!S.pows.length&&!S.items.length){dropItem(rollItem(),0,0);S.dropped--}
 }
 /* disparo contra una bola en la fase del jefe: empuja, frena y calienta (no rompe) */
 function bossHitBall(b,dir,tier,e,shot){
@@ -826,11 +831,11 @@ function drawBossHUD(){
       llena (12+ bolas). Uno por fase como mucho, nunca en los primeros 15 s, y solo si la fase
       no ha dado ya sus 2 premios. Responde al peligro: poco tiempo → escudo; pantalla llena → reloj.
    3. Máximo 2 premios por fase (los fijos tienen prioridad), uno en pantalla a la vez; si ya hay uno,
-      el premio fijo espera dentro de una bola hija. Duran 6 s en el suelo.
+      el premio fijo espera dentro de una bola hija. Duran 8 s en el suelo.
    4. El 1UP es el premio más raro del sorteo (vidas extra normales: por puntos). */
 /* cuántos premios esconde cada fase (las demás, ninguno). Qué premio es, qué bola lo lleva
    y a qué tamaño lo suelta se sortea al empezar la fase. */
-const STAGE_SLOTS={4:1,6:1,7:1,8:1,9:1,10:2,11:1,12:2};
+const STAGE_SLOTS={4:1,7:1,10:1,12:1};
 const ITEM_W={double:20,sticky:15,vulcan:15,freeze:15,shield:14,dynamite:9,oneup:4};
 function rollItem(){
   /* premio al azar, sin repetir en la fase ni dar lo que ya tienes */
@@ -859,7 +864,6 @@ function emergencyDrop(x,y){
 function canFire(){
   if(S.ready>0)return false;   /* no se carga hasta que las bolas se mueven */
   if(S.weapon==='sticky')return !S.beam;
-  if(S.weapon==='double')return S.shots.length<2;
   if(S.weapon==='vulcan')return S.shots.length<=3;
   return !S.shots.length;
 }
