@@ -935,7 +935,7 @@ function startStage(){
   for(const b of S.balls)safeFirstFall(b);
   /* tiempo de la fase: entre 40 y 80 s según los disparos que exige */
   const hits=list.reduce((a,sz)=>a+hitsFor(sz),0);
-  S.timeMax=Math.round(Math.max(40,Math.min(80,25+hits*1.4)))+30;   /* +30 s en todas las fases */S.time=S.timeMax*60;
+  S.timeMax=Math.round(Math.max(40,Math.min(80,25+hits*1.4)))+20;   /* +20 s en todas las fases */S.time=S.timeMax*60;
   S.ready=70;S.flashLvl=110;S.clearT=0;S.pending=[];S.items=[];S.stageBalls=list.length;
   /* ningún premio pasa a la fase siguiente (armas y escudo se pierden al cambiar de fase) */
   S.weapon='normal';S.shield=false;S.shieldBreak=null;S.beam=null;S.pows=[];S.iceT=0;S.boom=null;S.muzzle=null;S.dropped=0;S.emerg=false;
@@ -947,7 +947,7 @@ function startStage(){
 function startBossStage(){
   PLATS=[{x0:PR-150,x1:PR,y:GROUND-80}];   /* solo la plataforma del jefe */
   S.boss=makeBoss();if(S.bossHpKeep){S.boss.hp=S.boss.ghost=S.bossHpKeep}
-  S.balls=[];S.timeMax=180;S.time=S.timeMax*60;
+  S.balls=[];S.timeMax=170;S.time=S.timeMax*60;
   S.ready=90;S.flashLvl=130;S.clearT=0;S.pending=[];S.items=[];S.stageBalls=0;
   S.weapon='normal';S.shield=false;S.shieldBreak=null;S.beam=null;S.pows=[];S.iceT=0;S.boom=null;S.muzzle=null;S.dropped=0;S.emerg=false;S.planLeft=0;S.planTypes=[];
   sfx('start');playSong('boss');
@@ -1156,7 +1156,7 @@ function drawBall(b){
   const gs=b.grow>6?1+.35*Math.sin((24-b.grow)/18*Math.PI)-.25*(b.grow-6)/18:1;
   paintBall(b.x,b.y,b.r*gs,b.sz,b.hit);
   if(b.grow>16){ctx.save();ctx.globalCompositeOperation='lighter';ctx.globalAlpha=(b.grow-16)/8;ctx.fillStyle='#ffffff';ctx.beginPath();ctx.arc(b.x,b.y,b.r*gs,0,7);ctx.fill();ctx.restore()}
-  if(S.iceT>0&&!S.boss&&!(S.iceT<90&&S.iceT%12<6))ispr('fz',b.x,b.y,b.r*2.3,.85);
+  if(S.iceT>0&&!S.boss&&!(S.iceT<90&&S.iceT%12<6))ispr('fz',b.x,b.y,b.r*2.72,.85);   /* el hielo cubre todo el contorno de la bola */
 }
 function drawFx(f){
   const D=f.r*2;
