@@ -839,6 +839,21 @@ const rep_=(n,sz)=>Array(n).fill(sz);
 /* fases fijas: unas minimalistas (1-5 bolas) y otras de saturación (16-20) */
 const STAGES=[[2],[1],[2,2],rep_(4,3),[1,2],[1,1],rep_(4,2),rep_(8,3),[1,1,2],[...rep_(12,4),...rep_(8,3)],[1,1,1],[...rep_(6,2),...rep_(10,3)]];
 const hitsFor=sz=>(1<<(5-sz))-1;   /* disparos necesarios para limpiar una bola: 15, 7, 3, 1 */
+/* simula la primera caída de la bola y la desplaza si va a aterrizar encima del mago */
+function firstLandX(x,y,vx,r){
+  let vy=0;const g=grav(),lw=PL+r,rw=PR-r;
+  for(let i=0;i<600;i++){vy+=g;y+=vy;x+=vx;if(x<lw){x=lw;vx=Math.abs(vx)}if(x>rw){x=rw;vx=-Math.abs(vx)}if(y>=GROUND-r)return x}
+  return x;
+}
+function safeFirstFall(b){
+  const clear=b.r+70;
+  if(Math.abs(firstLandX(b.x,b.y,b.vx,b.r)-px)>=clear)return;
+  for(let d=12;d<PR-PL;d+=12){
+    for(const s of [1,-1]){const x=b.x+s*d;if(x<PL+b.r||x>PR-b.r)continue;
+      if(Math.abs(firstLandX(x,b.y,b.vx,b.r)-px)>=clear&&Math.abs(x-px)>=clear){b.x=x;return}}
+  }
+  b.vx=-b.vx;   /* último recurso: que salga hacia el otro lado */
+}
 function startStage(){
   if(isBossStage(S.level)){startBossStage();return}
   S.boss=null;PLATS=[];
@@ -850,6 +865,7 @@ function startStage(){
     const r=BALL[sz].r;x=Math.max(PL+r,Math.min(PR-r,x));
     return makeBall(sz,x,PT+r+12+(i%3)*28,x<cx?1:-1,0);
   });
+  for(const b of S.balls)safeFirstFall(b);
   /* tiempo de la fase: entre 40 y 80 s según los disparos que exige */
   const hits=list.reduce((a,sz)=>a+hitsFor(sz),0);
   S.timeMax=Math.round(Math.max(40,Math.min(80,25+hits*1.4)))+30;   /* +30 s en todas las fases */S.time=S.timeMax*60;
@@ -964,7 +980,7 @@ function step(){
   /* ítem 1UP */
   for(const it of S.items){it.t++;if(it.y<GROUND-9){it.vy+=.15;it.y=Math.min(GROUND-9,it.y+it.vy)}
     if(Math.abs(it.x-px)<22&&it.y>GROUND-py-HIT_H-9&&it.y<GROUND-py+9){it.dead=true;gainLife(it.x,it.y)}
-    if(it.t>360)it.dead=true}
+    if(it.t>480)it.dead=true}
   S.items=S.items.filter(it=>!it.dead);
   if(S.ready>0)S.ready--;
 
@@ -1003,7 +1019,7 @@ function step(){
   /* potenciadores caídos */
   for(const it of S.pows){it.t++;if(it.y<GROUND-14){it.vy+=.15;it.y=Math.min(GROUND-14,it.y+it.vy)}
     if(Math.abs(it.x-px)<26&&it.y>GROUND-py-HIT_H-14&&it.y<GROUND-py+14){it.dead=true;applyPow(it.type,it.x,it.y)}
-    if(it.t>360)it.dead=true}
+    if(it.t>480)it.dead=true}
   S.pows=S.pows.filter(it=>!it.dead);
   if(S.boss){updateMerges();updateMissiles()}
   const done=S.shots.filter(s=>s.dead);
@@ -1170,7 +1186,7 @@ function drawPowFx(){
     ctx.save();ctx.globalCompositeOperation='lighter';isprWH('sh7',A.x,A.y+4-Hh/2,W,Hh,1-k/24);
     ctx.strokeStyle=`rgba(190,245,255,${1-k/24})`;ctx.lineWidth=3*(1-k/24)+1;ctx.beginPath();ctx.ellipse(A.x,A.y,DOME_RX*(1+k*.05),DOME_RY*(1+k*.05),0,Math.PI,0);ctx.stroke();ctx.restore()}
   /* potenciadores caídos */
-  for(const it of S.pows){if(it.t>240&&it.t%10<5)continue;const bob=Math.sin(it.t*.12)*2;
+  for(const it of S.pows){if(it.t>360&&it.t%10<5)continue;const bob=Math.sin(it.t*.12)*2;
     ctx.save();ctx.globalCompositeOperation='lighter';const g=ctx.createRadialGradient(it.x,it.y+bob,2,it.x,it.y+bob,22);g.addColorStop(0,'rgba(255,230,140,.5)');g.addColorStop(1,'rgba(255,200,80,0)');ctx.fillStyle=g;ctx.beginPath();ctx.arc(it.x,it.y+bob,22,0,7);ctx.fill();ctx.restore();
     ispr('i_'+it.type,it.x,it.y+bob,28,1)}
   /* explosión de la dinamita */
@@ -1240,7 +1256,7 @@ function draw(){
   drawPowFx();
   for(const b of S.balls)drawBall(b);
   for(const f of S.fx)drawFx(f);
-  for(const it of S.items){if(it.t>240&&it.t%10<5)continue;const g=ctx.createRadialGradient(it.x-3,it.y-3,1,it.x,it.y,10);g.addColorStop(0,'#fff6c2');g.addColorStop(.5,'#ffc93a');g.addColorStop(1,'#a8620a');
+  for(const it of S.items){if(it.t>360&&it.t%10<5)continue;const g=ctx.createRadialGradient(it.x-3,it.y-3,1,it.x,it.y,10);g.addColorStop(0,'#fff6c2');g.addColorStop(.5,'#ffc93a');g.addColorStop(1,'#a8620a');
     ctx.fillStyle=g;ctx.beginPath();ctx.arc(it.x,it.y,10,0,7);ctx.fill();ctx.strokeStyle='#5a3404';ctx.lineWidth=1.5;ctx.stroke();txt('1UP',it.x,it.y+1,8,'#1a7a2a','center',"Silkscreen, monospace")}
   for(const p of S.parts){ctx.globalAlpha=Math.max(0,p.life/p.max)*.9;ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,p.s/2,0,7);ctx.fill()}
   ctx.globalAlpha=1;
