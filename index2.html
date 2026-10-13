@@ -493,7 +493,7 @@ function frameName(){
   if(a!=='hit'&&a!=='death'){
     if(!onGround)return a==='thrust'?'jshoot':'jump';
     if(landT>0&&a!=='thrust'&&a!=='crouch')return 'land';
-    if(moving&&(a==='idle'||a==='recover'))return 'walk'+(Math.floor(walkT/5)%8);
+    if(moving)return 'walk'+(Math.floor(walkT/5)%8);   /* al caminar mueve siempre los pies, también cargando o tras disparar */
   }
   if(a==='crouch')return w.charge>=1?'max':'charge';
   if(a==='thrust')return w.at<9?'attack':'attack2b';
@@ -538,7 +538,7 @@ function moveWizard(){
   const L=keys.has('ArrowLeft')||keys.has('KeyA'),Rr=keys.has('ArrowRight')||keys.has('KeyD');
   moving=(Rr?1:0)-(L?1:0);
   if(moving)face=moving;
-  const sp=S.charging?1.2:2.2;
+  const sp=S.charging?1.7:2.2;
   px=Math.max(PX_MIN,Math.min(PX_MAX,px+moving*sp));
   if(moving&&onGround){walkT++;if(walkT%10===0)sfx('step');if(walkT%20===0)dust(px-8*moving,4,.25)}else if(onGround)walkT=0;
   if(S.jumpReq&&onGround){pvy=JUMP_V;onGround=false;witch.sq=-.12;sfx('jump');dust(px,6,.3)}
@@ -1156,7 +1156,7 @@ function drawWitch(){
   ctx.drawImage(im,-m.cx,-m.bottom);
   ctx.filter='none';ctx.restore();
   /* brillo extra en la llama del bastón según la carga */
-  if(w.charge>0&&(n==='charge'||n==='max'||n==='jump')){
+  if(w.charge>0&&(n==='charge'||n==='max'||n==='jump'||n.startsWith('walk'))){
     const t=tipOf(n),c=w.charge,rr=10+c*24+Math.sin(G.frame*.5)*2,g=ctx.createRadialGradient(t.x,t.y,4,t.x,t.y,rr);
     g.addColorStop(0,`rgba(255,245,200,${.35+c*.45})`);g.addColorStop(.45,`rgba(255,170,60,${.2+c*.3})`);g.addColorStop(1,'rgba(255,150,40,0)');
     ctx.save();ctx.globalCompositeOperation='lighter';ctx.fillStyle=g;ctx.beginPath();ctx.arc(t.x,t.y,rr,0,7);ctx.fill();ctx.restore();
