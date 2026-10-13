@@ -686,7 +686,7 @@ const isReaper=()=>!!(S.boss&&S.boss.kind==='reaper');
 const BOSS1=()=>!!(S.boss&&S.boss.kind!=='reaper');   /* reglas de bolas del primer jefe (fusión, misil) */
 /* ===== EL NIGROMANTE (fase 20) =====
    Se teletransporta entre el suelo y 3 plataformas. Lanza dos rayos al cielo (45° y 75°)
-   y de cada uno caen 1 bola mediana y 2 pequeñas. Solo se le puede dar con el disparo recto
+   y de cada uno caen 1 bola mediana y 2 pequeñas (solo ataca desde las plataformas, máx. 10 bolas). Solo se le puede dar con el disparo recto
    cuando está en el suelo; en las plataformas, con la ráfaga Vulcan o saltando. */
 const RK=.7;
 const R45=['a0','a1','a2','a3','a4','a5','a6','idle'],R75=['b0','b1','b2','b3','b4','b5','idle2','b6'];
@@ -694,7 +694,7 @@ const REAPER_PLATS=[{x0:PR-290,x1:PR-170,y:GROUND-75},{x0:PR-140,x1:PR,y:GROUND-
 function reaperSpots(){return [{x:PR-60,feet:GROUND},...PLATS.map(p=>({x:(p.x0+p.x1)/2,feet:p.y}))]}
 function makeReaper(){
   const hp=40+(Math.floor(S.level/10)-1)*15;
-  return {kind:'reaper',x:PR-60,feet:GROUND,spot:0,state:'idle',t:0,hp,maxhp:hp,ghost:hp,flash:0,f:'idle',dead:0,alpha:1,dir:-1,acc:0,next:'cast45'};
+  return {kind:'reaper',x:PR-60,feet:GROUND,spot:0,state:'idle',t:0,hp,maxhp:hp,ghost:hp,flash:0,f:'idle',dead:0,alpha:1,dir:-1,acc:0,next:'vanish'};
 }
 function reaperRain(B,deg){
   /* el rayo sale del báculo hacia el cielo; las bolas caen donde apunta */
@@ -703,7 +703,7 @@ function reaperRain(B,deg){
   [[3,0],[4,-42],[4,42]].forEach(([sz,off],i)=>S.rainQ.push({sz,x:cx+off+(R()-.5)*16,d:10+i*9}));
 }
 function updateRain(){
-  for(const q of S.rainQ){if(--q.d>0)continue;q.done=true;if(S.balls.length>=14)continue;
+  for(const q of S.rainQ){if(--q.d>0)continue;q.done=true;if(S.balls.length>=10)continue;
     const r=BALL[q.sz].r,x=Math.max(PL+r,Math.min(PR-r,q.x)),b=makeBall(q.sz,x,PT+r+2,R()<.5?-1:1,0);b.trailT=12;safeFirstFall(b);S.balls.push(b);
     S.fx.push({type:'imp',x:b.x,y:b.y,r:18,t:0});
     for(let i=0;i<8;i++)S.parts.push({x:b.x,y:b.y,vx:(R()-.5)*3,vy:R()*2,life:18,max:18,c:i%2?'#ffd27a':'#ff7a2c',s:2+R()*3,g:.05})}
@@ -720,7 +720,7 @@ function updateReaper(B){
   const ground=B.spot===0;
   switch(B.state){
     case 'idle':B.f='idle';
-      if(B.t>(B.next==='vanish'?(ground?120:70):(B.next==='cast75'?24:(ground?70:50)))){B.t=0;B.state=B.next;if(B.state!=='vanish')B.dir=px<B.x?-1:1}
+      if(B.t>(B.next==='vanish'?(ground?370:70):(B.next==='cast75'?24:(ground?70:50)))){B.t=0;B.state=B.next;if(B.state!=='vanish')B.dir=px<B.x?-1:1}
       break;
     case 'cast45':case 'cast75':{
       const seq=B.state==='cast45'?R45:R75,fi=Math.min(7,Math.floor(B.t/7));B.f=seq[fi];
@@ -735,7 +735,8 @@ function updateReaper(B){
       break;
     case 'appear':
       B.alpha=Math.min(1,B.t/24);if(B.t%2===0)reaperSmoke(B,2);if(B.t===1)S.fx.push({type:'imp',x:B.x,y:B.feet-60,r:30,t:0});
-      if(B.t>=26){B.alpha=1;B.state='idle';B.t=0;B.next='cast45';B.dir=px<B.x?-1:1}
+      if(B.t>=26){B.alpha=1;B.state='idle';B.t=0;B.next=ground?'vanish':'cast45';   /* en el suelo no ataca: es el momento de darle */
+       B.dir=px<B.x?-1:1}
       break;
   }
   /* tocarlo hace daño (solo cuando es visible) */
