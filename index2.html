@@ -545,7 +545,7 @@ const keys=new Set();
 document.querySelectorAll('.tb').forEach(b=>{
   const k=b.dataset.k;
   b.addEventListener('pointerdown',e=>{e.preventDefault();e.stopPropagation();b.classList.add('on');
-    if(k==='Space')press();else{keys.add(k);if(k==='ArrowUp'&&S.state==='play')S.jumpReq=true}});
+    if(k==='Space')press(e.pointerId);else{keys.add(k);if(k==='ArrowUp'&&S.state==='play')S.jumpReq=true}});
   const up=e=>{b.classList.remove('on');if(k!=='Space')keys.delete(k)};
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);
 });
@@ -555,10 +555,15 @@ function reset(){
 }
 
 /* ---------- entrada: pulsar en cualquier sitio ---------- */
-function press(){initAudio();S.held=true;if(S.state==='play'&&!S.paused&&canFire())S.charging=true}
-function release(){S.held=false;if(!S.charging)return;S.charging=false;hum(false);fire()}
-stage.addEventListener('pointerdown',e=>{if(e.target.closest('.overlay'))return;press();e.preventDefault()});
-addEventListener('pointerup',release);addEventListener('blur',()=>keys.clear());addEventListener('pointercancel',release);
+/* la carga pertenece al dedo (o al ratón) que la empezó: levantar otro dedo no la suelta */
+let chargePtr=null;
+function press(id){initAudio();chargePtr=id==null?null:id;S.held=true;if(S.state==='play'&&!S.paused&&canFire())S.charging=true}
+function release(){chargePtr=null;S.held=false;if(!S.charging)return;S.charging=false;hum(false);fire()}
+stage.addEventListener('pointerdown',e=>{if(e.target.closest('.overlay'))return;press(e.pointerId);e.preventDefault()});
+addEventListener('pointerup',e=>{if(chargePtr!==null&&e.pointerId===chargePtr)release()});
+addEventListener('blur',()=>keys.clear());
+/* si el sistema cancela el toque (p. ej. al girar el móvil) no se dispara solo: se anula la carga */
+addEventListener('pointercancel',e=>{if(chargePtr!==null&&e.pointerId===chargePtr){chargePtr=null;S.held=false;S.charging=false;witch.charge=0;hum(false)}});
 addEventListener('keydown',e=>{
   if(['Space','ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.code))e.preventDefault();
   keys.add(e.code);
