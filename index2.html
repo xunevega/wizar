@@ -696,18 +696,18 @@ const BOSS1=()=>!!(S.boss&&S.boss.kind!=='reaper');   /* reglas de bolas del pri
 /* ===== EL NIGROMANTE (fase 20) =====
    Se teletransporta entre el suelo y 3 plataformas. Lanza dos rayos al cielo (45° y 75°)
    y de cada uno caen 1 bola mediana y 2 pequeñas (solo ataca desde las plataformas, máx. 10 bolas). Solo se le puede dar con el disparo recto
-   cuando está en el suelo; en las plataformas, con la ráfaga Vulcan o saltando. */
-const RK=.7;
+   cuando está en el suelo; en la torre, con la ráfaga Vulcan o saltando. */
+const RK=.52;
 const R45=['a0','a1','a2','a3','a4','a5','a6','idle'],R75=['b0','b1','b2','b3','b4','b5','idle2','b6'];
-const REAPER_PLATS=[{x0:PR-290,x1:PR-170,y:GROUND-75},{x0:PR-140,x1:PR,y:GROUND-150},{x0:PL+330,x1:PL+450,y:GROUND-215}];
-function reaperSpots(){return [{x:PR-60,feet:GROUND},...PLATS.map(p=>({x:(p.x0+p.x1)/2,feet:p.y}))]}
+const REAPER_PLATS=[{x0:PR-130,x1:PR,y:GROUND-60},{x0:PR-130,x1:PR,y:GROUND-165},{x0:PR-130,x1:PR,y:GROUND-270}];   /* torre: una encima de otra */
+function reaperSpots(){return [{x:PR-200,feet:GROUND},...PLATS.map(p=>({x:(p.x0+p.x1)/2,feet:p.y}))]}
 function makeReaper(){
   const hp=40+(Math.floor(S.level/10)-1)*15;
-  return {kind:'reaper',x:PR-60,feet:GROUND,spot:0,state:'idle',t:0,hp,maxhp:hp,ghost:hp,flash:0,f:'idle',dead:0,alpha:1,dir:-1,acc:0,next:'vanish'};
+  return {kind:'reaper',x:PR-200,feet:GROUND,spot:0,state:'idle',t:0,hp,maxhp:hp,ghost:hp,flash:0,f:'idle',dead:0,alpha:1,dir:-1,acc:0,next:'vanish'};
 }
 function reaperRain(B,deg){
   /* el rayo sale del báculo hacia el cielo; las bolas caen donde apunta */
-  const tx=B.x+B.dir*50,ty=B.feet-95,up=Math.max(30,ty-PT),cx=tx+B.dir*up/Math.tan(deg*Math.PI/180);
+  const tx=B.x+B.dir*37,ty=B.feet-70,up=Math.max(30,ty-PT),cx=tx+B.dir*up/Math.tan(deg*Math.PI/180);
   sfx('bosscast');
   [[3,0],[4,-42],[4,42]].forEach(([sz,off],i)=>S.rainQ.push({sz,x:cx+off+(R()-.5)*16,d:10+i*9}));
 }
@@ -718,10 +718,10 @@ function updateRain(){
     for(let i=0;i<8;i++)S.parts.push({x:b.x,y:b.y,vx:(R()-.5)*3,vy:R()*2,life:18,max:18,c:i%2?'#ffd27a':'#ff7a2c',s:2+R()*3,g:.05})}
   S.rainQ=S.rainQ.filter(q=>!q.done);
 }
-function reaperSmoke(B,n){for(let i=0;i<n;i++)S.parts.push({x:B.x+(R()-.5)*60,y:B.feet-R()*110,vx:(R()-.5)*1.4,vy:-.4-R()*1.2,life:34,max:34,c:R()<.5?'rgba(255,130,40,.7)':'rgba(50,20,25,.6)',s:6+R()*9,g:-.02})}
+function reaperSmoke(B,n){for(let i=0;i<n;i++)S.parts.push({x:B.x+(R()-.5)*45,y:B.feet-R()*85,vx:(R()-.5)*1.4,vy:-.4-R()*1.2,life:34,max:34,c:R()<.5?'rgba(255,130,40,.7)':'rgba(50,20,25,.6)',s:6+R()*9,g:-.02})}
 function updateReaper(B){
   B.t++;if(B.flash>0)B.flash--;
-  if(B.state==='dying'){B.dead++;B.f='idle';B.alpha=1;if(B.dead%6===0){S.fx.push({type:'imp',x:B.x+(R()-.5)*70,y:B.feet-15-R()*95,r:28,t:0});sfx('break',1);S.shake=6}
+  if(B.state==='dying'){B.dead++;B.f='idle';B.alpha=1;if(B.dead%6===0){S.fx.push({type:'imp',x:B.x+(R()-.5)*70,y:B.feet-12-R()*70,r:24,t:0});sfx('break',1);S.shake=6}
     if(B.dead>110){B.state='gone';S.boom={x:B.x,y:B.feet-50,t:0};sfx('boom');for(const b of S.balls)shatter(b);S.balls=[];S.rainQ=[]}return}
   if(B.state==='gone')return;
   updateRain();
@@ -743,8 +743,8 @@ function updateReaper(B){
         const sp=reaperSpots();B.spot=ground?1+Math.floor(R()*3):0;B.x=sp[B.spot].x;B.feet=sp[B.spot].feet;B.state='appear';B.t=0}
       break;
     case 'appear':
-      B.alpha=Math.min(1,B.t/24);if(B.t%2===0)reaperSmoke(B,2);if(B.t===1)S.fx.push({type:'imp',x:B.x,y:B.feet-60,r:30,t:0});
-      if(B.t>=26){B.alpha=1;B.state='idle';B.t=0;B.next=ground?'vanish':'cast45';   /* en el suelo no ataca: es el momento de darle */
+      B.alpha=Math.min(1,B.t/24);if(B.t%2===0)reaperSmoke(B,2);if(B.t===1)S.fx.push({type:'imp',x:B.x,y:B.feet-45,r:30,t:0});
+      if(B.t>=26){B.alpha=1;B.state='idle';B.t=0;B.next=(ground||B.spot===3)?'vanish':'cast45';   /* rayos solo desde las dos plataformas de abajo */   /* en el suelo no ataca: es el momento de darle */
        B.dir=px<B.x?-1:1}
       break;
   }
@@ -753,7 +753,7 @@ function updateReaper(B){
 }
 function drawReaper(B){
   const m=RMETA[B.f],im=RIM[B.f];if(!m||!im||!im.complete)return;
-  ctx.fillStyle='rgba(30,20,20,.3)';ctx.beginPath();ctx.ellipse(B.x,B.feet+1,40*B.alpha,4,0,0,7);ctx.fill();
+  ctx.fillStyle='rgba(30,20,20,.3)';ctx.beginPath();ctx.ellipse(B.x,B.feet+1,30*B.alpha,3.5,0,0,7);ctx.fill();
   ctx.save();ctx.globalAlpha=B.state==='dying'?Math.max(0,1-B.dead/110):B.alpha;
   if(B.flash>0&&B.flash%6<3)ctx.filter='brightness(2.4)';
   ctx.translate(B.x+(B.state==='dying'?(R()-.5)*4:0),B.feet+3);if(B.dir>0)ctx.scale(-1,1);
@@ -808,7 +808,7 @@ function updateBoss(){
   /* el jefe hace daño si lo tocas */
   if(S.invul<=0&&B.state!=='dying'){const dx=Math.abs(px-B.x),top=B.feet-BFEET-30;if(dx<45&&GROUND-py>top&&GROUND-py-HIT_H<B.feet){if(S.shield)breakShield({x:B.x,y:B.feet-60,sz:1,r:30,boss:true});else{loseLife('ball');return true}}}
 }
-function bossBody(B){if(B.kind==='reaper')return {x0:B.x-38,x1:B.x+38,y0:B.feet-112,y1:B.feet-4};return {x0:B.x-44,x1:B.x+44,y0:B.feet-BFEET-45,y1:B.feet-5}}
+function bossBody(B){if(B.kind==='reaper')return {x0:B.x-28,x1:B.x+28,y0:B.feet-84,y1:B.feet-3};return {x0:B.x-44,x1:B.x+44,y0:B.feet-BFEET-45,y1:B.feet-5}}
 function bossHittable(B){return B&&S.ready<=0&&!(B.kind==='reaper'&&B.alpha<.6)&&B.state!=='dying'&&B.state!=='gone'}
 /* disparo mágico directo: daño según la carga */
 function shotBoss(x,y,tier,dir){
@@ -819,7 +819,7 @@ function shotBoss(x,y,tier,dir){
   if(B.kind==='reaper'&&B.hp>0){B.acc+=dmg;if(B.acc>=12){B.acc-=12;if(!S.pows.length&&!S.items.length){dropItem(rollItem(),0,0);S.dropped--}}}   /* cada 12 de daño, un premio */
   if(B.hp<=0)bossDefeated();
 }
-function bossDefeated(){const B=S.boss;B.state='dying';B.dead=0;addScore(50000);pop(B.x,B.feet-(B.kind==='reaper'?140:BFEET+60),'¡JEFE DERROTADO! 50000','#ffe066',20);stopSong()}
+function bossDefeated(){const B=S.boss;B.state='dying';B.dead=0;addScore(50000);pop(B.x,B.feet-(B.kind==='reaper'?105:BFEET+60),'¡JEFE DERROTADO! 50000','#ffe066',20);stopSong()}
 function damageBoss(m){
   const B=S.boss;B.hp=Math.max(0,B.hp-8);B.flash=24;S.shake=12;S.freeze=6;sfx('bosshit');addScore(5000);
   pop(B.x,B.feet-BFEET-40,'-8  5000','#ffe066',18);S.boom={x:m.x,y:m.y,t:6};
