@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0;font-size:14px}</style>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#0c0913"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><style>[hidden]{display:none!important}body{margin:0;font-size:14px}</style>
 <title>El mago y las bolas de hierro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -53,8 +53,44 @@ canvas{display:block;width:100%;height:100%;cursor:pointer}
 .panel td:first-child{color:var(--muted)}
 kbd{font-family:var(--pixel);font-size:12px;background:#0f0b17;border:1px solid var(--line);border-bottom-width:2px;border-radius:3px;padding:0 5px}
 @media (prefers-reduced-motion:reduce){.start:active{transform:none}}
+/* ---------- móvil ---------- */
+.rotate{display:none}
+@media (pointer:coarse){
+  html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
+  .tb{-webkit-tap-highlight-color:transparent}
+}
+/* móvil en horizontal: la pantalla del juego en el centro y los mandos en las franjas laterales */
+@media (pointer:coarse) and (orientation:landscape){
+  html,body{height:100%;overflow:hidden;overscroll-behavior:none}
+  body{position:fixed;inset:0}
+  .wrap{max-width:none;height:100dvh;margin:0;padding:0 env(safe-area-inset-right) 0 env(safe-area-inset-left);display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:100dvh;align-items:center;gap:0}
+  .card,footer,header h1{display:none}
+  header{position:fixed;top:6px;left:calc(env(safe-area-inset-left) + 6px);z-index:5;display:block}
+  header .tools{gap:6px}
+  header .btn{font-size:10px;padding:4px 7px;border-width:1px}
+  .stage{grid-column:2;grid-row:1;height:min(100dvh,calc((100vw - 300px - env(safe-area-inset-left) - env(safe-area-inset-right))*224/384));width:auto;max-width:none;border:0;border-radius:0;box-shadow:none}
+  .tpad{display:contents}
+  .tgrp{grid-row:1;justify-self:center;align-items:center}
+  .tgrp:first-child{grid-column:1;padding-top:40px}
+  .tgrp:last-child{grid-column:3;flex-direction:column;gap:14px}
+  .tb{width:66px;height:66px;font-size:24px}
+  .tb.fire{width:88px;height:88px;font-size:30px}
+  .overlay .big{font-size:clamp(24px,9vh,60px)}
+  .overlay .sub{font-size:clamp(10px,3.4vh,16px)}
+  .start{font-size:clamp(14px,5vh,22px)}
+  .hint{font-size:10px}
+}
+/* móvil en vertical: pedir que se gire */
+@media (pointer:coarse) and (orientation:portrait){
+  .rotate{display:flex;position:fixed;inset:0;z-index:50;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
+  .rotate .ico{width:64px;height:104px;border:4px solid var(--violet);border-radius:12px;animation:turn 2s ease-in-out infinite}
+  .rotate b{font-family:var(--display);font-weight:400;font-size:24px}
+  .rotate span{font-family:var(--pixel);font-size:12px;color:var(--muted);letter-spacing:.08em}
+  @keyframes turn{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(90deg)}100%{transform:rotate(90deg)}}
+}
 </style>
 
+<div class="rotate" id="rotate"><div class="ico"></div><b>Gira el móvil</b><span>EL MAGO SE JUEGA EN HORIZONTAL</span></div>
 <div class="wrap">
   <header>
     <h1>El mago <span>y las bolas de hierro</span></h1>
@@ -1281,7 +1317,13 @@ function loop(now){
   draw();requestAnimationFrame(loop);
 }
 const overlay=document.getElementById('overlay'),ovTitle=document.getElementById('ovTitle'),ovSub=document.getElementById('ovSub'),ovHint=document.getElementById('ovHint'),startBtn=document.getElementById('startBtn');
-function start(){initAudio();sfx('start');reset();try{document.activeElement&&document.activeElement.blur()}catch(_){}}
+function goFull(){
+  /* en móvil: pantalla completa y bloqueo en horizontal donde el navegador lo permite (Android) */
+  if(!matchMedia('(pointer:coarse)').matches)return;
+  try{const el=document.documentElement,rq=el.requestFullscreen||el.webkitRequestFullscreen;
+    if(rq&&!document.fullscreenElement){const p=rq.call(el);if(p&&p.then)p.then(()=>{try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('landscape').catch(()=>{})}catch(_){}}).catch(()=>{})}}catch(_){}
+}
+function start(){goFull();initAudio();sfx('start');reset();try{document.activeElement&&document.activeElement.blur()}catch(_){}}
 startBtn.addEventListener('click',start);
 function showOver(){
   S.state='over';ovTitle.textContent=S.deathReason==='time'?'¡TIEMPO!':'¡SÁNDWICH!';
