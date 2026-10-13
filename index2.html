@@ -791,6 +791,7 @@ function emergencyDrop(x,y){
   if(type&&dropItem(type,x,y))S.emerg=true;
 }
 function canFire(){
+  if(S.ready>0)return false;   /* no se carga hasta que las bolas se mueven */
   if(S.weapon==='sticky')return !S.beam;
   if(S.weapon==='double')return S.shots.length<2;
   if(S.weapon==='vulcan')return S.shots.length<=3;
@@ -870,8 +871,8 @@ function startStage(){
   const hits=list.reduce((a,sz)=>a+hitsFor(sz),0);
   S.timeMax=Math.round(Math.max(40,Math.min(80,25+hits*1.4)))+30;   /* +30 s en todas las fases */S.time=S.timeMax*60;
   S.ready=70;S.flashLvl=110;S.clearT=0;S.pending=[];S.items=[];S.stageBalls=list.length;
-  /* las armas duran hasta el final de la fase; el escudo se conserva hasta recibir un golpe */
-  S.weapon='normal';S.beam=null;S.pows=[];S.iceT=0;S.boom=null;S.muzzle=null;S.dropped=0;S.emerg=false;
+  /* ningún premio pasa a la fase siguiente (armas y escudo se pierden al cambiar de fase) */
+  S.weapon='normal';S.shield=false;S.shieldBreak=null;S.beam=null;S.pows=[];S.iceT=0;S.boom=null;S.muzzle=null;S.dropped=0;S.emerg=false;
   const nSlots=STAGE_SLOTS[L<=STAGES.length?L:4+((L-1-4)%(STAGES.length-4))+1]||0;S.planLeft=nSlots;S.planTypes=[];
   const pool=S.balls.map((b,i)=>i).sort(()=>R()-.5);
   for(let k=0;k<nSlots&&k<pool.length;k++){const b=S.balls[pool[k]];b.carry='?';b.carryAt=Math.max(b.sz,2+Math.floor(R()*3))}
@@ -882,7 +883,7 @@ function startBossStage(){
   S.boss=makeBoss();if(S.bossHpKeep){S.boss.hp=S.boss.ghost=S.bossHpKeep}
   S.balls=[];S.timeMax=180;S.time=S.timeMax*60;
   S.ready=90;S.flashLvl=130;S.clearT=0;S.pending=[];S.items=[];S.stageBalls=0;
-  S.weapon='normal';S.beam=null;S.pows=[];S.iceT=0;S.boom=null;S.muzzle=null;S.dropped=0;S.emerg=false;S.planLeft=0;S.planTypes=[];
+  S.weapon='normal';S.shield=false;S.shieldBreak=null;S.beam=null;S.pows=[];S.iceT=0;S.boom=null;S.muzzle=null;S.dropped=0;S.emerg=false;S.planLeft=0;S.planTypes=[];
   sfx('start');playSong('boss');
 }
 function moveBall(b){
@@ -990,8 +991,6 @@ function step(){
     if(S.boss&&S.ready<=0)moveBall(b);
     else if(S.iceT>0){if(S.iceT%2===0&&b.hist&&b.hist.length){const h=b.hist.pop();b.x=h[0];b.y=h[1];b.vx=h[2];b.vy=h[3];b.kx=h[4]}}
     else if(S.ready<=0){(b.hist=b.hist||[]).push([b.x,b.y,b.vx,b.vy,b.kx]);if(b.hist.length>300)b.hist.shift();moveBall(b)}
-    if(S.shield&&S.ready<=0){const dx=(b.x-px)/(DOME_RX+b.r),dy=(b.y-(GROUND-py))/(DOME_RY+b.r);
-      if(dx*dx+dy*dy<1&&b.y<GROUND-py+b.r){breakShield(b);continue}}
     {const cx=Math.max(face>0?px-18:px-15,Math.min(face>0?px+15:px+18,b.x)),cy=Math.max(GROUND-py-HIT_H,Math.min(GROUND-py,b.y));if(S.ready<=0&&S.invul<=0&&Math.hypot(b.x-cx,b.y-cy)<b.r-2){if(S.shield){breakShield(b)}else{loseLife('ball');return}}}
   }
   for(const s of S.shots){
@@ -1179,9 +1178,9 @@ function drawPowFx(){
     ctx.save();ctx.globalCompositeOperation='lighter';
     if(k<DOME_GROW){const p=k/DOME_GROW,e=1-(1-p)*(1-p);
       /* anillo en el suelo y la cúpula subiendo desde abajo hasta cerrarse arriba */
-      ispr('sh0',px,by-4,W*(.6+.4*e),1);
+      ispr('sh0',px,by-4,W*(.6+.4*e),.55);
       ctx.beginPath();ctx.rect(px-W,by-Hh*e,W*2,Hh*e+4);ctx.clip();}
-    isprWH(f,px,by-Hh/2,W,Hh,.9);ctx.restore()}
+    isprWH(f,px,by-Hh/2,W,Hh,.42);ctx.restore()}
   if(S.shieldBreak!=null){const k=S.shieldBreak,A=S.shieldAt,W=DOME_RX*2.2*(1+k*.04),Hh=DOME_RY*1.18*(1+k*.04);
     ctx.save();ctx.globalCompositeOperation='lighter';isprWH('sh7',A.x,A.y+4-Hh/2,W,Hh,1-k/24);
     ctx.strokeStyle=`rgba(190,245,255,${1-k/24})`;ctx.lineWidth=3*(1-k/24)+1;ctx.beginPath();ctx.ellipse(A.x,A.y,DOME_RX*(1+k*.05),DOME_RY*(1+k*.05),0,Math.PI,0);ctx.stroke();ctx.restore()}
