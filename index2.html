@@ -1023,9 +1023,9 @@ function step(){
     S.overT++;if(py>0){pvy-=GRAV;py=Math.max(0,py+pvy)}animWitch();
     if(S.overT===62&&S.deathReason==='ball'){
       /* ¡sándwich!: salen las bolas de la ilustración y se le van acumulando encima al mago, una tras otra */
-      const cx=Math.max(PL+85,Math.min(PR-85,px)),src=S.balls.slice();
-      SANDW.order.forEach((bi,k)=>{const b=SANDW.balls[bi],o=src[k];
-        S.sand.push({bi,delay:k*4,x:o?o.x:cx+(b.x-SANDW.ax)*SAND_F*6,y:o?o.y:-40-(k%4)*30,tx:cx+(b.x-SANDW.ax)*SAND_F,ty:GROUND+1+(b.y-SANDW.ay)*SAND_F})});
+      const cx=Math.max(PL+85,Math.min(PR-85,px));
+      SANDW.order.forEach((bi,k)=>{const b=SANDW.balls[bi];
+        S.sand.push({bi,delay:k*4,x:cx+(b.x-SANDW.ax)*SAND_F,y:PT-20-b.r*SAND_F,tx:cx+(b.x-SANDW.ax)*SAND_F,ty:GROUND+1+(b.y-SANDW.ay)*SAND_F})});
       S.balls=[];S.sandX=cx;
     }
     if(S.sandX!=null&&S.overT>62)px+=(S.sandX-px)*.16;
