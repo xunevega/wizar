@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#0c0913"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><style>[hidden]{display:none!important}body{margin:0;font-size:14px}</style>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><meta name="theme-color" content="#8e1a2e"><meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes"><style>[hidden]{display:none!important}body{margin:0;font-size:14px}</style>
 <title>El mago y las bolas de hierro</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Silkscreen:wght@400;700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bungee&family=Oswald:wght@600&family=Silkscreen:wght@400;700&display=swap">
 <style>
 /* Recreativa de los 90: pantalla 384×224 como Super Pang, marco de ladrillos y marcador abajo */
 :root{
@@ -59,22 +59,35 @@ kbd{font-family:var(--pixel);font-size:12px;background:#0f0b17;border:1px solid 
   html,body{touch-action:manipulation;-webkit-text-size-adjust:100%}
   .tb{-webkit-tap-highlight-color:transparent}
 }
-/* móvil en horizontal: la pantalla del juego en el centro y los mandos en las franjas laterales */
+/* móvil en horizontal, estilo Game & Watch: carcasa granate, pantalla con bisel crema, mandos a los lados */
+.gw-key span{display:none}
 @media (pointer:coarse) and (orientation:landscape){
+  :root{--gw-red:#9c1b31;--gw-red2:#7c1226;--gw-cream:#efe6d2;--gw-btn:#e02a2c;--gw-btn2:#b51d20}
   html,body{height:100%;overflow:hidden;overscroll-behavior:none}
-  body{position:fixed;inset:0}
+  body{position:fixed;inset:0;background:radial-gradient(ellipse at 50% 40%,var(--gw-red),var(--gw-red2))}
   .wrap{max-width:none;height:100dvh;margin:0;padding:0 env(safe-area-inset-right) 0 env(safe-area-inset-left);display:grid;grid-template-columns:1fr auto 1fr;grid-template-rows:100dvh;align-items:center;gap:0}
-  .card,footer,header h1{display:none}
-  header{position:fixed;top:6px;left:calc(env(safe-area-inset-left) + 6px);z-index:5;display:block}
-  header .tools{gap:6px}
-  header .btn{font-size:10px;padding:4px 7px;border-width:1px}
-  .stage{grid-column:2;grid-row:1;height:min(100dvh,calc((100vw - 300px - env(safe-area-inset-left) - env(safe-area-inset-right))*224/384));width:auto;max-width:none;border:0;border-radius:0;box-shadow:none}
+  .card,footer,header{display:none}
+  .stage{grid-column:2;grid-row:1;height:min(calc(100dvh - 22px),calc((100vw - 344px - env(safe-area-inset-left) - env(safe-area-inset-right))*224/384));width:auto;max-width:none;
+    border:3px solid #222;border-radius:4px;box-shadow:0 0 0 8px var(--gw-cream),0 0 0 10px #c9bda4,0 4px 0 10px rgba(0,0,0,.25)}
   .tpad{display:contents}
   .tgrp{grid-row:1;justify-self:center;align-items:center}
-  .tgrp:first-child{grid-column:1;padding-top:40px}
-  .tgrp:last-child{grid-column:3;flex-direction:column;gap:14px}
-  .tb{width:66px;height:66px;font-size:24px}
-  .tb.fire{width:88px;height:88px;font-size:30px}
+  .gw-left{grid-column:1;gap:14px}
+  .gw-right{grid-column:3;flex-direction:column;gap:14px}
+  .gw-sys{display:flex;gap:12px}
+  .gw-key{display:flex;flex-direction:column;align-items:center;gap:5px}
+  .gw-key span{display:block;font-family:'Oswald','Arial Narrow',sans-serif;font-weight:600;font-size:11px;letter-spacing:.04em;color:var(--gw-cream);line-height:1.25}
+  .tb,.gw-pill{-webkit-tap-highlight-color:transparent;touch-action:none;cursor:pointer;padding:0}
+  .tb.gw-dir{width:50px;height:46px;border-radius:8px;border:0;background:linear-gradient(#ef3d3a,var(--gw-btn) 55%,var(--gw-btn2));
+    box-shadow:0 0 0 5px var(--gw-cream),0 0 0 6px #b8ab92,inset 0 -3px 0 rgba(0,0,0,.25),inset 0 2px 0 rgba(255,255,255,.25);display:grid;place-items:center}
+  .tb.gw-dir.on{transform:translateY(2px);box-shadow:0 0 0 5px var(--gw-cream),0 0 0 6px #b8ab92,inset 0 3px 4px rgba(0,0,0,.35)}
+  .tri{width:0;height:0;border-top:9px solid transparent;border-bottom:9px solid transparent}
+  .tri.l{border-right:13px solid #7e0d12;margin-right:3px}
+  .tri.r{border-left:13px solid #7e0d12;margin-left:3px}
+  .gw-pill{width:36px;height:16px;border-radius:9px;border:0;background:linear-gradient(#5b5b62,#38383d);box-shadow:0 0 0 4px var(--gw-cream),0 0 0 5px #b8ab92,inset 0 -2px 0 rgba(0,0,0,.4)}
+  .gw-pill:active,.gw-pill[aria-pressed="true"]{background:linear-gradient(#2a2a2e,#46464c)}
+  .tb.fire.gw-fire{width:74px;height:74px;border-radius:50%;border:0;background:radial-gradient(circle at 40% 35%,#f15a52,var(--gw-btn) 50%,var(--gw-btn2));
+    box-shadow:0 0 0 7px var(--gw-cream),0 0 0 8px #b8ab92,inset 0 -4px 0 rgba(0,0,0,.25)}
+  .tb.fire.gw-fire.on{transform:translateY(2px);box-shadow:0 0 0 7px var(--gw-cream),0 0 0 8px #b8ab92,inset 0 4px 6px rgba(0,0,0,.35)}
   .overlay .big{font-size:clamp(24px,9vh,60px)}
   .overlay .sub{font-size:clamp(10px,3.4vh,16px)}
   .start{font-size:clamp(14px,5vh,22px)}
@@ -82,10 +95,10 @@ kbd{font-family:var(--pixel);font-size:12px;background:#0f0b17;border:1px solid 
 }
 /* móvil en vertical: pedir que se gire */
 @media (pointer:coarse) and (orientation:portrait){
-  .rotate{display:flex;position:fixed;inset:0;z-index:50;background:var(--bg);flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
-  .rotate .ico{width:64px;height:104px;border:4px solid var(--violet);border-radius:12px;animation:turn 2s ease-in-out infinite}
+  .rotate{display:flex;position:fixed;inset:0;z-index:50;background:#8e1a2e;color:#efe6d2;flex-direction:column;align-items:center;justify-content:center;gap:18px;text-align:center;padding:24px}
+  .rotate .ico{width:64px;height:104px;border:4px solid #efe6d2;border-radius:12px;animation:turn 2s ease-in-out infinite}
   .rotate b{font-family:var(--display);font-weight:400;font-size:24px}
-  .rotate span{font-family:var(--pixel);font-size:12px;color:var(--muted);letter-spacing:.08em}
+  .rotate span{font-family:var(--pixel);font-size:12px;color:#e9c9b9;letter-spacing:.08em}
   @keyframes turn{0%,20%{transform:rotate(0)}50%,80%{transform:rotate(90deg)}100%{transform:rotate(90deg)}}
 }
 </style>
@@ -111,8 +124,17 @@ kbd{font-family:var(--pixel);font-size:12px;background:#0f0b17;border:1px solid 
   </div>
 
   <div class="tpad" id="tpad">
-    <div class="tgrp"><button type="button" class="tb" data-k="ArrowLeft" aria-label="Caminar a la izquierda">◀</button><button type="button" class="tb" data-k="ArrowRight" aria-label="Caminar a la derecha">▶</button></div>
-    <div class="tgrp"><button type="button" class="tb" data-k="ArrowUp" aria-label="Saltar">▲</button><button type="button" class="tb fire" data-k="Space" aria-label="Cargar y disparar">✦</button></div>
+    <div class="tgrp gw-left">
+      <div class="gw-key"><button type="button" class="tb gw-dir" data-k="ArrowLeft" aria-label="Izquierda"><i class="tri l"></i></button><span>IZQUIERDA</span></div>
+      <div class="gw-key"><button type="button" class="tb gw-dir" data-k="ArrowRight" aria-label="Derecha"><i class="tri r"></i></button><span>DERECHA</span></div>
+    </div>
+    <div class="tgrp gw-right">
+      <div class="gw-sys">
+        <div class="gw-key"><button type="button" class="gw-pill" id="gwMute" aria-label="Música" aria-pressed="false"></button><span>MÚSICA</span></div>
+        <div class="gw-key"><button type="button" class="gw-pill" id="gwPause" aria-label="Pausa" aria-pressed="false"></button><span>PAUSA</span></div>
+      </div>
+      <div class="gw-key"><button type="button" class="tb fire gw-fire" data-k="Space" aria-label="Disparo"></button><span>DISPARO</span></div>
+    </div>
   </div>
 
   <div class="card">
@@ -1286,7 +1308,7 @@ function drawHUD(){
   if(S.combo&&S.combo.life>0){const c=S.combo,k=Math.min(1,(70-c.life)/6),sz=22+c.n*4;ctx.globalAlpha=Math.min(1,c.life/15);ctx.save();ctx.translate(mx,PT+50);ctx.scale(1.4-.4*k,1.4-.4*k);txt('COMBO ×'+c.n,0,0,sz,'#ffe066');ctx.restore();ctx.globalAlpha=1}
   for(const p of S.pops){ctx.globalAlpha=Math.min(1,p.life/20);txt(p.text,p.x,p.y,p.size,p.col);ctx.globalAlpha=1}
   if(S.state==='dead'&&S.overT>(S.deathReason==='time'?20:80)){const k=Math.min(1,(S.overT-80)/10);ctx.save();ctx.translate(mx,PT+56);ctx.scale(.5+.5*k,.5+.5*k);ctx.rotate(-.04);txt(S.deathReason==='time'?'¡TIEMPO!':'¡SÁNDWICH!',0,0,48,S.deathReason==='time'?'#ff6a5a':'#fff36b');ctx.restore()}
-  if(S.paused){ctx.fillStyle='rgba(10,8,20,.55)';ctx.fillRect(PL,PT,PR-PL,PB-PT);txt('PAUSA',mx,my,46,'#ffffff');txt('Pulsa P para seguir',mx,my+38,13,'#e6e0f0','center',"Silkscreen, monospace")}
+  if(S.paused){ctx.fillStyle='rgba(10,8,20,.55)';ctx.fillRect(PL,PT,PR-PL,PB-PT);txt('PAUSA',mx,my,46,'#ffffff');txt((matchMedia('(pointer:coarse)').matches?'Pulsa PAUSA para seguir':'Pulsa P para seguir'),mx,my+38,13,'#e6e0f0','center',"Silkscreen, monospace")}
 }
 function draw(){
   ctx.setTransform(RS,0,0,RS,0,0);
@@ -1337,8 +1359,11 @@ function showOver(){
   startBtn.textContent='Otra vez';overlay.classList.add('see','over');overlay.hidden=false;playSong('over');
 }
 const pauseBtn=document.getElementById('pauseBtn'),muteBtn=document.getElementById('muteBtn');
-function togglePause(){if(S.state!=='play')return;S.paused=!S.paused;S.charging=false;witch.charge=0;hum(false);pauseBtn.textContent=S.paused?'Seguir':'Pausa'}
+function togglePause(){if(S.state!=='play')return;S.paused=!S.paused;S.charging=false;witch.charge=0;hum(false);pauseBtn.textContent=S.paused?'Seguir':'Pausa';const gp=document.getElementById('gwPause');if(gp)gp.setAttribute('aria-pressed',String(S.paused))}
 pauseBtn.addEventListener('click',togglePause);
+{const gm=document.getElementById('gwMute'),gp=document.getElementById('gwPause');
+  gm.addEventListener('click',e=>{e.stopPropagation();muteBtn.click();gm.setAttribute('aria-pressed',muteBtn.getAttribute('aria-pressed'))});
+  gp.addEventListener('click',e=>{e.stopPropagation();togglePause()});}
 muteBtn.addEventListener('click',()=>{muted=!muted;hum(false);if(MASTER)MASTER.gain.value=muted?0:.9;muteBtn.textContent='Sonido: '+(muted?'no':'sí');muteBtn.setAttribute('aria-pressed',String(muted));initAudio()});
 addEventListener('pointerdown',()=>{if(!AC){initAudio();if(S.state==='title')playSong('title')}},{once:true});
 addEventListener('keydown',()=>{if(!AC){initAudio();if(S.state==='title')playSong('title')}},{once:true});
