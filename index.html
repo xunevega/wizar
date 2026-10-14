@@ -1497,7 +1497,10 @@ pauseBtn.addEventListener('click',togglePause);
 muteBtn.addEventListener('click',()=>{muted=!muted;hum(false);if(MASTER)MASTER.gain.value=muted?0:.9;muteBtn.textContent='Sonido: '+(muted?'no':'sí');muteBtn.setAttribute('aria-pressed',String(muted));initAudio()});
 addEventListener('pointerdown',()=>{if(!AC){initAudio();if(S.state==='title')playSong('title')}},{once:true});
 addEventListener('keydown',()=>{if(!AC){initAudio();if(S.state==='title')playSong('title')}},{once:true});
-document.addEventListener('visibilitychange',()=>{if(document.hidden&&S.state==='play'&&!S.paused)togglePause()});
+/* pausa automática al cambiar de pestaña, de app o de ventana */
+function autoPause(){S.held=false;chargePtr=null;keys.clear();moving=0;if(S.state==='play'&&!S.paused)togglePause()}
+document.addEventListener('visibilitychange',()=>{if(document.hidden)autoPause()});
+addEventListener('blur',autoPause);addEventListener('pagehide',autoPause);
 
 paintFG();paintFrame();ctx.imageSmoothingQuality='high';
 /* portada: bolas de ejemplo en el aire */
