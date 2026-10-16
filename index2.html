@@ -184,7 +184,7 @@ kbd{font-family:var(--pixel);font-size:12px;background:#0f0b17;border:1px solid 
         <tr><td>Poción roja: el mago se mueve un 35 % más rápido</td><td>permanente</td></tr>
         <tr><td>Poción verde: los disparos van un 50 % más rápido</td><td>permanente</td></tr>
         <tr><td>Poción azul: la carga de energía empieza ya al 20 %</td><td>permanente</td></tr>
-        <tr><td>Escondidas en una bola en las fases 3, 6, 9, 13, 16, 19…</td><td>8 s en el suelo</td></tr>
+        <tr><td>Escondidas en una bola en las fases 3, 5, 7, 9, 13, 15, 17, 19…</td><td>8 s en el suelo</td></tr>
       </table>
     </div>
   </div>
@@ -570,7 +570,7 @@ function frameName(){
 }
 /* ---------- estado ---------- */
 let best=0;try{best=+localStorage.getItem('sw2-best')||0}catch(_){}
-const S={state:'title',potions:[],potDrops:[],score:0,level:1,lives:3,weapon:'normal',shield:false,shieldT:0,shieldBreak:null,invul:0,iceT:0,beam:null,pows:[],boom:null,muzzle:null,stageBalls:0,nextExt:100000,time:0,timeMax:0,items:[],timeBonus:0,balls:[],shots:[],frags:[],parts:[],pops:[],fx:[],pending:[],freeze:0,ready:0,clearT:0,paused:false,shake:0,overT:0,
+const S={state:'title',potions:[],potDrops:[],score:0,level:1,lives:5,weapon:'normal',shield:false,shieldT:0,shieldBreak:null,invul:0,iceT:0,beam:null,pows:[],boom:null,muzzle:null,stageBalls:0,nextExt:100000,time:0,timeMax:0,items:[],timeBonus:0,balls:[],shots:[],frags:[],parts:[],pops:[],fx:[],pending:[],freeze:0,ready:0,clearT:0,paused:false,shake:0,overT:0,
   charging:false,queued:null,recoil:0,flashLvl:0,sand:[],sandX:null};
 const keys=new Set();
 document.querySelectorAll('.tb').forEach(b=>{
@@ -581,7 +581,7 @@ document.querySelectorAll('.tb').forEach(b=>{
   b.addEventListener('pointerup',up);b.addEventListener('pointercancel',up);b.addEventListener('pointerleave',up);
 });
 function reset(){
-  Object.assign(S,{state:'play',potions:[],potDrops:[],score:0,level:10,lives:3,shield:false,invul:0,respawnT:0,nextExt:100000,items:[],balls:[],shots:[],frags:[],parts:[],pops:[],fx:[],pending:[],freeze:0,shake:0,overT:0,charging:false,queued:null,recoil:0,flashLvl:100,sand:[],sandX:null,maxT:0});
+  Object.assign(S,{state:'play',potions:[],potDrops:[],score:0,level:10,lives:5,shield:false,invul:0,respawnT:0,nextExt:100000,items:[],balls:[],shots:[],frags:[],parts:[],pops:[],fx:[],pending:[],freeze:0,shake:0,overT:0,charging:false,queued:null,recoil:0,flashLvl:100,sand:[],sandX:null,maxT:0});
   Object.assign(witch,{state:'idle',charge:0,flash:0,anim:'idle',at:0,dx:0,dy:0,rot:0,maxFx:0,sq:0});px=(PL+PR)/2;py=0;pvy=0;onGround=true;landT=0;moving=0;face=1;keys.clear();S.combo=null;startStage();overlay.hidden=true;overlay.classList.remove('see','over');
 }
 
@@ -950,12 +950,12 @@ function emergencyDrop(x,y){
 /* ===== POCIONES (permanentes) =====
    Roja: mago ×1,35 más rápido. Azul: la carga empieza al 20 %. Verde: disparos ×1,5 más rápidos.
    Una de cada color como máximo; pasan de fase; al morir se pierde solo la última conseguida;
-   el escudo las protege. Salen en las fases 3, 6, 9, 13, 16, 19... escondidas en una bola. */
+   el escudo las protege. Salen en las fases 3, 5, 7, 9, 13, 15, 17, 19... escondidas en una bola. */
 const POT_ORDER=['red','green','blue'];
 const POT_COL={red:['#ff3b3b','#ffc0b0'],green:['#4dff4a','#d6ffbe'],blue:['#30b4ff','#c4f0ff']};
 const POT_NAME={red:'¡POCIÓN ROJA! VELOCIDAD',green:'¡POCIÓN VERDE! DISPARO RÁPIDO',blue:'¡POCIÓN AZUL! CARGA'};
 const hasPot=t=>S.potions.includes(t);
-const isPotStage=L=>!isBossStage(L)&&[3,6,9].includes(L%10);
+const isPotStage=L=>!isBossStage(L)&&[3,5,7,9].includes(L%10);
 function startCharge(){S.charging=true;if(hasPot('blue'))witch.charge=Math.max(witch.charge,.2)}
 function dropPotion(type){
   const x=(PL+PR)/2+(S.pows.length?70:0),y=PT+30;
