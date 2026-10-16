@@ -1000,9 +1000,10 @@ const BALL=[null,
   {r:26,h:255,col:['#ffc2bb','#e0262a','#6e0a0e'],pts:100},
   {r:16,h:215,col:['#c4f5c8','#22a83c','#0a5219'],pts:150},
   {r:9, h:165,col:['#e2ffc2','#4fbf3a','#175f10'],pts:200}];
-const grav=()=>BOSS1()?.07:Math.min(.17,.09+(S.level-1)*.008)*(isReaper()?.25:1);   /* nigromante: bolas a la mitad de velocidad (mismas parábolas) */
+const LATE=()=>!S.boss&&S.level>=21;   /* desde la fase 21: bolas un 30 % más lentas (mismas parábolas) */
+const grav=()=>BOSS1()?.07:Math.min(.17,.09+(S.level-1)*.008)*(isReaper()?.25:LATE()?.49:1);   /* nigromante: bolas a la mitad de velocidad (mismas parábolas) */
 const bounceV=sz=>Math.sqrt(2*grav()*BALL[sz].h);
-const baseVX=()=>Math.min(2.1,.7+(S.level-1)*.09)*(isReaper()?.5:1);
+const baseVX=()=>Math.min(2.1,.7+(S.level-1)*.09)*(isReaper()?.5:LATE()?.7:1);
 /* vidas extra: a los 100.000 y 200.000 puntos, y luego cada 200.000 */
 function addScore(n){S.score+=n;while(S.score>=S.nextExt){S.nextExt=S.nextExt<200000?200000:S.nextExt+200000;gainLife(px,GROUND-py-60)}}
 function gainLife(x,y){S.lives++;sfx('oneup');pop(x,y-10,'1UP!','#7dff8a',18);S.fx.push({type:'spark',x,y,r:20,t:0})}
